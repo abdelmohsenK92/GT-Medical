@@ -89,11 +89,9 @@ namespace GT_Medical.Services
         private void ExtractLibVLC()
         {
             string libvlcDir = AppDomain.CurrentDomain.BaseDirectory + "\\libvlc";
-            MessageBox.Show(libvlcDir);
             if (!Directory.Exists(libvlcDir))
             {
                 var archiveFile = libvlcDir + ".rar";
-                MessageBox.Show(archiveFile);
                 if (File.Exists(archiveFile))
                 {
                     try
