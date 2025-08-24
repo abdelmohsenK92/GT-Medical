@@ -54,6 +54,7 @@ public partial class FrmVideoPlayer : BaseForm
             catch (Exception ex)
             {
                 _loading.Close();
+                MessageBox.Show("حدث خطأ أثناء التهيئة: " + ex.ToString(), "خطأ", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         });
     }

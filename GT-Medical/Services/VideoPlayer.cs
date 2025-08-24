@@ -89,25 +89,35 @@ namespace GT_Medical.Services
         private void ExtractLibVLC()
         {
             string libvlcDir = AppDomain.CurrentDomain.BaseDirectory + "\\libvlc";
+            MessageBox.Show(libvlcDir);
             if (!Directory.Exists(libvlcDir))
             {
                 var archiveFile = libvlcDir + ".rar";
-                if (File.Exists(libvlcDir))
+                MessageBox.Show(archiveFile);
+                if (File.Exists(archiveFile))
                 {
-                    using (var archive = ArchiveFactory.Open(archiveFile))
+                    try
                     {
-                        foreach (var entry in archive.Entries)
+                        using (var archive = ArchiveFactory.Open(archiveFile))
                         {
-                            if (!entry.IsDirectory)
+                            foreach (var entry in archive.Entries)
                             {
-                                Console.WriteLine($"Extracting: {entry.Key}");
-                                entry.WriteToDirectory(AppDomain.CurrentDomain.BaseDirectory, new ExtractionOptions()
+                                if (!entry.IsDirectory)
                                 {
-                                    ExtractFullPath = true,   // keep folder structure
-                                    Overwrite = true          // overwrite if file exists
-                                });
+                                    Console.WriteLine($"Extracting: {entry.Key}");
+                                    entry.WriteToDirectory(AppDomain.CurrentDomain.BaseDirectory, new ExtractionOptions()
+                                    {
+                                        ExtractFullPath = true,   // keep folder structure
+                                        Overwrite = true          // overwrite if file exists
+                                    });
+                                }
                             }
                         }
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show("حدث خطأ أثناء التهيئة: " + ex.ToString(), "خطأ", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        throw;
                     }
                 }
             }

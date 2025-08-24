@@ -12,15 +12,23 @@ namespace GT_Medical
         {
             // To customize application configuration such as set high DPI settings or default font,
             // see https://aka.ms/applicationconfiguration.
-            ApplicationConfiguration.Initialize();
-            Application.SetUnhandledExceptionMode(UnhandledExceptionMode.Automatic);
-            Application.ThreadException += (s, e) =>
+            try
             {
-                // log the exception, display it, etc
-                MessageBox.Show(e.Exception.Message + "\n" + e.Exception.StackTrace, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            };
-            Application.Run(new FrmVideoPlayer());
-            
+                ApplicationConfiguration.Initialize();
+                Application.SetUnhandledExceptionMode(UnhandledExceptionMode.CatchException);
+                Application.ThreadException += (s, e) =>
+                {
+                    // log the exception, display it, etc
+                    MessageBox.Show(e.Exception.Message + "\n" + e.Exception.StackTrace, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                };
+                Application.Run(new FrmVideoPlayer());
+
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message + "\n" + ex.StackTrace, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+
+            }
         }
     }
 }
