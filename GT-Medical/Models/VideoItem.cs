@@ -1,4 +1,5 @@
-﻿using System;
+﻿using GT_Medical.Abstractions;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -7,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace GT_Medical.Models
 {
-    public class VideoItem
+    public class VideoItem : ITransientService
     {
         public required Guid ID { get; set; }
         public required string Barcode { get; set; }

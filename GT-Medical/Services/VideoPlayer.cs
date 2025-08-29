@@ -1,5 +1,5 @@
 ﻿using GT_Medical.Abstractions;
-using GT_Medical.Helper.Extensions;
+using GT_Medical.Helper;
 using GT_Medical.Infrastructure;
 using LibVLCSharp.Shared;
 using SharpCompress.Archives;
@@ -16,7 +16,7 @@ namespace GT_Medical.Services
     /// Owns LibVLC + MediaPlayer. Binds MediaPlayer to the UI's VideoSurface (VideoView),
     /// reacts to UI events, and pushes playback state back to UI.
     /// </summary>
-    public class VideoPlayer : CrossThreadInvoker
+    public class VideoPlayer : CrossThreadInvoker, IScopedService
     {
         private readonly VideoDb _db;
         private readonly IVideoSurfaceUi _ui;

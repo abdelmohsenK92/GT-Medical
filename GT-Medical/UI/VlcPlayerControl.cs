@@ -1,5 +1,5 @@
 using GT_Medical.Abstractions;
-using GT_Medical.Helper.Extensions;
+using GT_Medical.Helper;
 using GT_Medical.Services;
 using LibVLCSharp.Shared;
 using LibVLCSharp.WinForms;
@@ -14,7 +14,7 @@ using Timer = System.Windows.Forms.Timer;
 
 namespace GT_Medical.UI
 {
-    public partial class VlcPlayerControl : UserControl, IVideoSurfaceUi
+    public partial class VlcPlayerControl : UserControl, IVideoSurfaceUi, ITransientService
     {
         // === لا يوجد LibVLC ولا MediaPlayer هنا ===
 
@@ -46,7 +46,7 @@ namespace GT_Medical.UI
             _invoker = new CrossThreadInvoker(this);
             InitializeUiOnly();
         }
-
+        
         #region IVideoSurfaceUi
         [Browsable(false)]
         public VideoView VideoSurface => videoView;
@@ -74,7 +74,7 @@ namespace GT_Medical.UI
             // Reflect quickly in UI
             UpdateUi(refreshSeek: true, refreshTime: true, refreshButtons: true, refreshVolume: true);
         }
-
+       
         public void ShowOverlayTemporarily()
         {
             _invoker.RunOnUi(() =>

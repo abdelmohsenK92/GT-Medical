@@ -1,8 +1,11 @@
 using GT_Medical.UI;
+using Microsoft.VisualBasic.Devices;
+using System;
+using System.Configuration;
 
 namespace GT_Medical
 {
-    internal static class Program
+    public static class Program
     {
         /// <summary>
         ///  The main entry point for the application.
@@ -21,8 +24,7 @@ namespace GT_Medical
                     // log the exception, display it, etc
                     MessageBox.Show(e.Exception.Message + "\n" + e.Exception.StackTrace, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 };
-                Application.Run(new FrmVideoPlayer());
-
+                Startup.RunApp();
             }
             catch (Exception ex)
             {

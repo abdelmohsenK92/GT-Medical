@@ -1,5 +1,7 @@
-﻿using GT_Medical.Infrastructure;
+﻿using GT_Medical.Abstractions;
+using GT_Medical.Infrastructure;
 using GT_Medical.Models;
+using GT_Medical.Services;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -12,23 +14,40 @@ using System.Windows.Forms;
 
 namespace GT_Medical.UI
 {
-    public partial class FrmItems : BaseForm
+    public partial class FrmItems : BaseForm, ITransientService
     {
         private VideoDb _db;
         private VideoItem _selectedItem;
+
         public FrmItems() : base()
         {
-            if (DesignMode) return;
+            if (DesignMode) 
+                return;
+
             InitializeComponent();
             StyleGrid(DGVData);
             AddGridColumns(DGVData);
             StyleGridButtons(DGVData);
+            DGVData.CellClick += DGVData_CellClick;
         }
+
+        private void DGVData_CellClick(object? sender, DataGridViewCellEventArgs e)
+        {
+            var index = e.ColumnIndex;
+            var name = DGVData.Columns[e.ColumnIndex].Name;
+        }
+
         public FrmItems(VideoDb db) : this()
         {
             _db = db;
             DGVData.DataSource = _db.Items;
+            Load += FrmItems_Load;
             //FitColumns(DGVData);
+        }
+
+        private void FrmItems_Load(object? sender, EventArgs e)
+        {
+            TxtPath.Text = AppSettings.Current.LocalVideosUrl;
         }
 
         private void StyleGrid(DataGridView g)
@@ -68,7 +87,7 @@ namespace GT_Medical.UI
             var grid = (DataGridView)sender;
             if (e.RowIndex < 0 || e.ColumnIndex < 0)
                 return;
-            if (!(grid.Columns[e.ColumnIndex] is DataGridViewButtonColumn)) 
+            if (!(grid.Columns[e.ColumnIndex] is DataGridViewButtonColumn))
                 return;
 
             e.Handled = true;
@@ -99,25 +118,31 @@ namespace GT_Medical.UI
             g.Columns.Add(new DataGridViewTextBoxColumn
             {
                 HeaderText = "ID",
+                Name = nameof(VideoItem.ID),
                 DataPropertyName = nameof(VideoItem.ID),
                 AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill,
-                Visible = false
+                Visible = false,
+                DisplayIndex = 0
             });
 
             g.Columns.Add(new DataGridViewTextBoxColumn
             {
                 HeaderText = "الباركود",
+                Name = nameof(VideoItem.Barcode),
                 DataPropertyName = nameof(VideoItem.Barcode),
                 AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill,
                 FillWeight = 75,
+                DisplayIndex = 1
             });
 
             g.Columns.Add(new DataGridViewTextBoxColumn
             {
                 HeaderText = "اسم الصنف",
+                Name = nameof(VideoItem.Name),
                 DataPropertyName = nameof(VideoItem.Name),
                 AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill,
                 FillWeight = 75,
+                DisplayIndex = 2
             });
 
             g.Columns.Add(new DataGridViewTextBoxColumn
@@ -126,63 +151,77 @@ namespace GT_Medical.UI
                 DataPropertyName = nameof(VideoItem.Description),
                 AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill,
                 FillWeight = 150,
+                DisplayIndex = 3
+
             });
 
             g.Columns.Add(new DataGridViewTextBoxColumn
             {
                 HeaderText = "رابط الفيديو",
+                Name = nameof(VideoItem.LocalPath),
                 DataPropertyName = nameof(VideoItem.LocalPath),
                 AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill,
                 ReadOnly = true,
-                Visible = false
+                Visible = false,
+                DisplayIndex = 4
             });
+
             g.Columns.Add(new DataGridViewTextBoxColumn
             {
                 HeaderText = "رابط التحميل",
                 DataPropertyName = nameof(VideoItem.RemoteUrl),
                 AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill,
                 ReadOnly = true,
-                Visible = false
+                Visible = false,
+                DisplayIndex = 5
             });
+
             g.Columns.Add(new DataGridViewTextBoxColumn
             {
                 HeaderText = "Status",
+                Name = nameof(VideoItem.Status),
                 DataPropertyName = nameof(VideoItem.Status),
                 AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill,
                 ReadOnly = true,
-                Visible = false
+                Visible = false,
+                DisplayIndex = 6
             });
 
             g.Columns.Add(new DataGridViewTextBoxColumn
             {
                 HeaderText = "Progress %",
+                Name = nameof(VideoItem.Progress),
                 DataPropertyName = nameof(VideoItem.Progress),
                 AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill,
                 ReadOnly = true,
-                Visible = false               
+                Visible = false,
+                DisplayIndex = 7
             });
-
 
             var btnCol = new DataGridViewButtonColumn
             {
                 HeaderText = "",
                 Text = "تحميل ⬇",
+                Name = "Load",
                 UseColumnTextForButtonValue = true,
                 AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill,
                 FillWeight = 40,
-                ReadOnly = true,                
+                DisplayIndex = 8
             };
+
             g.Columns.Add(btnCol);
 
             var btnPlayCol = new DataGridViewButtonColumn
             {
                 HeaderText = "",
                 Text = "تشغيل ▶",
+                Name = "Play",
                 UseColumnTextForButtonValue = true,
                 AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill,
-                FillWeight = 40,              
-                               
+                FillWeight = 40,
+                DisplayIndex = 9
             };
+
             g.Columns.Add(btnPlayCol);
         }
         private void FitColumns(DataGridView grid, int maxWidth = 380)
@@ -217,8 +256,8 @@ namespace GT_Medical.UI
 
         private async void DGVData_CellValueChanged(object sender, DataGridViewCellEventArgs e)
         {
-            if(_selectedItem != null)
-                await _db.UpdateAsync(_selectedItem,true);
+            if (_selectedItem != null)
+                await _db.UpdateAsync(_selectedItem, true);
         }
 
         private void DGVData_CellBeginEdit(object sender, DataGridViewCellCancelEventArgs e)
@@ -229,6 +268,78 @@ namespace GT_Medical.UI
             }
             catch (Exception ex)
             {
+            }
+        }
+
+        private void BtnBrowse_Click(object sender, EventArgs e)
+        {
+            DlgFolderBrowser.InitialDirectory = AppSettings.Current.LocalVideosUrl;
+            var dlgResult = DlgFolderBrowser.ShowDialog();
+            if (dlgResult == DialogResult.OK)
+            {
+                TxtPath.Text = DlgFolderBrowser.SelectedPath;
+                AppSettings.Current = new AppSettings { LocalVideosUrl = DlgFolderBrowser.SelectedPath };
+            }
+        }
+
+        private async void DGVData_CellContentClick(object sender, DataGridViewCellEventArgs e)
+        {
+            if (e.ColumnIndex > 1)
+                return;
+
+            if(e.ColumnIndex == 0)
+            {
+                using var dlg = new OpenFileDialog();
+                dlg.Title = "اختر ملف الفيديو";
+                dlg.Filter = "Video Files|*.mp4;*.avi;*.mkv;*.mov;*.wmv;*.flv;*.webm|All Files|*.*";
+                var result = dlg.ShowDialog();
+                if (result == DialogResult.OK)
+                {
+                    try
+                    {
+                        var item = (VideoItem)DGVData.Rows[e.RowIndex].DataBoundItem;
+                        if (item != null)
+                        {
+                            item.LocalPath = dlg.FileName;
+                            DGVData.Refresh();
+                            await _db.UpdateAsync(item, true);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                    }
+                }
+            }
+            else if(e.ColumnIndex == 1)
+            {
+                try
+                {
+                    var item = (VideoItem)DGVData.Rows[e.RowIndex].DataBoundItem;
+                    if (item != null && !string.IsNullOrWhiteSpace(item.LocalPath))
+                    {
+                        var baseForm =  new BaseForm()
+                        {
+                         WindowState = FormWindowState.Maximized   
+                        };
+                        var videplayer = new VlcPlayerControl()
+                        {
+                            Dock = DockStyle.Fill,
+                        };
+                        baseForm.Controls.Add(videplayer);
+                        baseForm.SetTitle(item.Name);
+                        VideoPlayer player = new VideoPlayer(baseForm,videplayer,baseForm.ShowTip);
+                        baseForm.Shown += async (s, ev) =>
+                        {
+                            videplayer.BringToFront();
+                            await player.InitializeAsync();
+                            player.PlayLocal(item.LocalPath);
+                        };
+                        baseForm.ShowDialog(this);
+                    }
+                }
+                catch (Exception ex)
+                {
+                }
             }
         }
     }

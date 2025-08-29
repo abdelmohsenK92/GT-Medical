@@ -1,4 +1,5 @@
-﻿using GT_Medical.Helper.Extensions;
+﻿using GT_Medical.Abstractions;
+using GT_Medical.Helper;
 using GT_Medical.Models;
 using Newtonsoft.Json;
 using SharpCompress.Archives;
@@ -20,7 +21,7 @@ namespace GT_Medical.Infrastructure
     /// - Exposes a bindable collection (VideoItemsBindingCollection) for UI binding.
     /// - All modifications to the binding collection are marshaled to the UI thread via RunOnUi.
     /// </summary>
-    public class VideoDb : CrossThreadInvoker
+    public class VideoDb : CrossThreadInvoker, IScopedService
     {
         private readonly string _dbPath;
         private readonly string _videosDir;

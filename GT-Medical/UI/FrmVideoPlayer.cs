@@ -1,7 +1,8 @@
-﻿using GT_Medical.Helper.Extensions;
+﻿using GT_Medical.Abstractions;
+using GT_Medical.Helper;
 using GT_Medical.Services;
 namespace GT_Medical.UI;
-public partial class FrmVideoPlayer : BaseForm
+public partial class FrmVideoPlayer : BaseForm, ISingletonService
 {
     private FrmLoading _loading;
     VideoPlayer _player;
@@ -27,7 +28,14 @@ public partial class FrmVideoPlayer : BaseForm
             _loading.ShowDialog(this);
         };
     }
-
+    public FrmVideoPlayer(string videoPath) : this()
+    {
+        PnlSplitter.Panel1Collapsed = true;
+        Shown += (s, e) =>
+        {
+            _player.PlayLocal(videoPath);
+        };
+    }
     public Task InitializeAsync()
     {
         return Task.Factory.StartNew(async () =>

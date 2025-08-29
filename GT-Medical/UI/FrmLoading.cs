@@ -1,4 +1,5 @@
-﻿using System;
+﻿using GT_Medical.Abstractions;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -11,7 +12,7 @@ using Timer = System.Windows.Forms.Timer;
 
 namespace GT_Medical.UI
 {
-    public partial class FrmLoading : Form
+    public partial class FrmLoading : Form, ITransientService
     {
         private readonly Form _owner;
         private readonly Timer _timerDots;

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using GT_Medical.Abstractions;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -13,7 +14,7 @@ using Timer = System.Windows.Forms.Timer;
 
 namespace GT_Medical.UI;
 
-public partial class BaseForm : Form
+public partial class BaseForm : Form, ITransientService
 {
     public event EventHandler ExitClicked;
     private float headerOpacity = 0f;
@@ -66,11 +67,11 @@ public partial class BaseForm : Form
         this.DoubleBuffered = true;
     }
 
-    protected void SetTitle(string title)
+    public void SetTitle(string title)
     {
         LblTitle.Text = title;
     }
-    protected void ShowTip(string text,int duration = 5000)
+    public void ShowTip(string text,int duration = 5000)
     {
         if (duration <= 0)
             duration = 5000;

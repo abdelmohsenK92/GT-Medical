@@ -1,13 +1,14 @@
-﻿using System;
+﻿using GT_Medical.Abstractions;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace GT_Medical.Helper.Extensions
+namespace GT_Medical.Helper
 {
-    public class CrossThreadInvoker
+    public class CrossThreadInvoker : ISingletonService
     {
         // UI marshaling (set once from the Form)
         private ISynchronizeInvoke _uiInvoker;

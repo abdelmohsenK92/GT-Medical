@@ -8,7 +8,7 @@ namespace GT_Medical.Abstractions
     /// raises user-intent events (play/pause/seek/volume),
     /// and accepts state updates from the backend (VideoPlayer).
     /// </summary>
-    public interface IVideoSurfaceUi
+    public interface IVideoSurfaceUi : ISingletonService
     {
         // The render surface; the service will assign MediaPlayer to it.
         VideoView VideoSurface { get; }
@@ -27,5 +27,18 @@ namespace GT_Medical.Abstractions
         // Show overlay briefly (e.g., after user input)
         void ShowOverlayTemporarily();
     }
+
+    public interface ITransientService    
+    {
+
+    }
+    public interface IScopedService
+    {
+
+    }
+    public interface ISingletonService
+    {
+
+    }   
 }
 
