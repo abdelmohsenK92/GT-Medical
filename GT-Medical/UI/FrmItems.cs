@@ -18,21 +18,25 @@ namespace GT_Medical.UI
     {
         private VideoDb _db;
         private VideoItem _selectedItem;
-
+        BindingSource _gridSource;
         public FrmItems() : base()
         {
-            if (DesignMode) 
+            if (DesignMode)
                 return;
-
+            _gridSource = new BindingSource();
             InitializeComponent();
             StyleGrid(DGVData);
             AddGridColumns(DGVData);
             StyleGridButtons(DGVData);
             DGVData.CellClick += DGVData_CellClick;
+            SetCueBanner(TxtSearch, "بحث");
+
         }
 
         private void DGVData_CellClick(object? sender, DataGridViewCellEventArgs e)
         {
+            if (e.ColumnIndex < 0)
+                return;
             var index = e.ColumnIndex;
             var name = DGVData.Columns[e.ColumnIndex].Name;
         }
@@ -40,8 +44,10 @@ namespace GT_Medical.UI
         public FrmItems(VideoDb db) : this()
         {
             _db = db;
-            DGVData.DataSource = _db.Items;
+            _gridSource.DataSource = _db.Items;
+            DGVData.DataSource = _gridSource;
             Load += FrmItems_Load;
+
             //FitColumns(DGVData);
         }
 
@@ -271,14 +277,17 @@ namespace GT_Medical.UI
             }
         }
 
-        private void BtnBrowse_Click(object sender, EventArgs e)
+        private async void BtnBrowse_Click(object sender, EventArgs e)
         {
             DlgFolderBrowser.InitialDirectory = AppSettings.Current.LocalVideosUrl;
             var dlgResult = DlgFolderBrowser.ShowDialog();
             if (dlgResult == DialogResult.OK)
             {
                 TxtPath.Text = DlgFolderBrowser.SelectedPath;
-                AppSettings.Current = new AppSettings { LocalVideosUrl = DlgFolderBrowser.SelectedPath };
+                AppSettings.Current = new AppSettings
+                { LocalVideosUrl = DlgFolderBrowser.SelectedPath };
+
+                await _db.MergeNewFilesAsync(videoPath: TxtPath.Text);
             }
         }
 
@@ -287,7 +296,7 @@ namespace GT_Medical.UI
             if (e.ColumnIndex > 1)
                 return;
 
-            if(e.ColumnIndex == 0)
+            if (e.ColumnIndex == 0)
             {
                 using var dlg = new OpenFileDialog();
                 dlg.Title = "اختر ملف الفيديو";
@@ -310,16 +319,16 @@ namespace GT_Medical.UI
                     }
                 }
             }
-            else if(e.ColumnIndex == 1)
+            else if (e.ColumnIndex == 1)
             {
                 try
                 {
                     var item = (VideoItem)DGVData.Rows[e.RowIndex].DataBoundItem;
                     if (item != null && !string.IsNullOrWhiteSpace(item.LocalPath))
                     {
-                        var baseForm =  new BaseForm()
+                        var baseForm = new BaseForm()
                         {
-                         WindowState = FormWindowState.Maximized   
+                            WindowState = FormWindowState.Maximized
                         };
                         var videplayer = new VlcPlayerControl()
                         {
@@ -327,7 +336,7 @@ namespace GT_Medical.UI
                         };
                         baseForm.Controls.Add(videplayer);
                         baseForm.SetTitle(item.Name);
-                        VideoPlayer player = new VideoPlayer(baseForm,videplayer,baseForm.ShowTip);
+                        VideoPlayer player = new VideoPlayer(baseForm, videplayer, baseForm.ShowTip);
                         baseForm.Shown += async (s, ev) =>
                         {
                             videplayer.BringToFront();
@@ -335,11 +344,59 @@ namespace GT_Medical.UI
                             player.PlayLocal(item.LocalPath);
                         };
                         baseForm.ShowDialog(this);
+                        videplayer.Dispose();
+                        player.Dispose();
+                        baseForm.Dispose();
                     }
                 }
                 catch (Exception ex)
                 {
                 }
+            }
+        }
+
+       
+
+        private void TxtSearch_TextChanged(object sender, EventArgs e)
+        {
+            try
+            {
+                if (_db == null || _db.Items == null)
+                    return;
+                if (TxtSearch.Text.Length == 0)
+                {
+                    _gridSource.DataSource = new BindingList<VideoItem>(_db.Items.ToList());
+                    DGVData.Refresh();
+                    return;
+                }
+                _gridSource.DataSource = new BindingList<VideoItem>(
+    _db.Items.Where(video =>
+                    video.Name.Contains(TxtSearch.Text, StringComparison.OrdinalIgnoreCase)
+                    || video.Barcode.Contains(TxtSearch.Text, StringComparison.OrdinalIgnoreCase)
+                    || (video.Description ?? "").Contains(TxtSearch.Text, StringComparison.OrdinalIgnoreCase))
+    .ToList());
+                DGVData.Refresh();
+            }
+            catch (Exception ex)
+            {
+            }
+        }
+        
+        private async void DGVData_UserDeletingRow(object sender, DataGridViewRowCancelEventArgs e)
+        {
+            try
+            {
+                if(e.Row.Index < 0 || e.Row.Index >= DGVData.Rows.Count)
+                    return;
+                var item = (VideoItem)e.Row.DataBoundItem;
+                if (item != null)
+                {
+                    await _db.DeleteAsync(item, true);
+                    DGVData.Refresh();
+                }
+            }
+            catch (Exception ex)
+            {
             }
         }
     }

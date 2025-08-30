@@ -16,7 +16,7 @@ namespace GT_Medical.Services
     /// Owns LibVLC + MediaPlayer. Binds MediaPlayer to the UI's VideoSurface (VideoView),
     /// reacts to UI events, and pushes playback state back to UI.
     /// </summary>
-    public class VideoPlayer : CrossThreadInvoker, IScopedService
+    public class VideoPlayer : CrossThreadInvoker, ITransientService
     {
         private readonly VideoDb _db;
         private readonly IVideoSurfaceUi _ui;

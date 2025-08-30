@@ -10,6 +10,8 @@
     <StartupObject>GT_Medical.Program</StartupObject>
     <ApplicationIcon>favicon-1.ico</ApplicationIcon>
     <ApplicationManifest>app.manifest</ApplicationManifest>
+    <GeneratePackageOnBuild>False</GeneratePackageOnBuild>
+    <FileVersion>1.0.0.1</FileVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -31,7 +33,6 @@
     <PackageReference Include="LibVLCSharp.WinForms" Version="3.9.4" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.8" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.8" />
-    <PackageReference Include="Microsoft.Extensions.Logging" Version="9.0.8" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="SharpCompress" Version="0.40.0" />
     <PackageReference Include="VideoLAN.LibVLC.Windows" Version="3.0.21" />

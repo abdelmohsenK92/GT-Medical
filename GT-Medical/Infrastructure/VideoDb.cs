@@ -38,8 +38,8 @@ namespace GT_Medical.Infrastructure
         {
             string appBase = AppDomain.CurrentDomain.BaseDirectory;
             _dbPath = Path.Combine(appBase, "db.dll");
-            _videosDir = Path.Combine(appBase, "videos");
-            Directory.CreateDirectory(_videosDir);
+            _videosDir = AppSettings.Current.LocalVideosUrl;
+            //Path.Combine(appBase, "videos");
             //ExtractVideos();
         }
 
@@ -80,7 +80,7 @@ namespace GT_Medical.Infrastructure
         {
             allowedExtensions ??= new[] { ".mp4", ".mov", ".mkv", ".avi", ".wmv" };
             
-            if (!File.Exists(_videosDir))
+            if (!Directory.Exists(_videosDir))
                 Directory.CreateDirectory(_videosDir);
             if (!File.Exists(_dbPath))
             {
@@ -264,6 +264,24 @@ namespace GT_Medical.Infrastructure
                 await SaveAsync();
             return updated;
         }
+        public async Task<bool> DeleteAsync(VideoItem item, bool autoSave = true)
+        {
+            bool deleted = false;
+
+            RunOnUi(() =>
+            {
+                var itemToDelete = _items.FirstOrDefault(x => x.ID.Equals(item.ID));
+                if (itemToDelete != null)
+                {
+                    Items.Remove(itemToDelete);
+                    deleted = true;
+                }
+            });
+
+            if (deleted && autoSave)
+                await SaveAsync();
+            return deleted;
+        }
 
         /// <summary>
         /// Update Status by barcode. Marshaled to the UI thread.
@@ -313,11 +331,12 @@ namespace GT_Medical.Infrastructure
         /// Rescan the "videos" folder and add any new files with new barcodes. Marshaled to the UI thread.
         /// Also refreshes Status for existing rows based on file existence.
         /// </summary>
-        public async Task<int> MergeNewFilesAsync(string[] allowedExtensions = null)
+        public async Task<int> MergeNewFilesAsync(string[] allowedExtensions = null,string videoPath = null)
         {
+            videoPath ??= _videosDir;
             allowedExtensions ??= new[] { ".mp4", ".mov", ".mkv", ".avi", ".wmv" };
             var files = Directory
-                .EnumerateFiles(_videosDir, "*.*", SearchOption.AllDirectories)
+                .EnumerateFiles(videoPath, "*.*", SearchOption.AllDirectories)
                 .Where(f => allowedExtensions.Contains(Path.GetExtension(f), StringComparer.OrdinalIgnoreCase))
                 .ToList();
 
@@ -334,7 +353,7 @@ namespace GT_Medical.Infrastructure
 
                     var item = new VideoItem
                     {
-                        ID = new Guid(),
+                        ID = Guid.NewGuid(),
                         Barcode = NextBarcodeUiThread(),
                         Name = Path.GetFileNameWithoutExtension(f),
                         LocalPath = f,

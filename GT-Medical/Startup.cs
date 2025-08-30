@@ -1,12 +1,8 @@
 using GT_Medical.Helper.Extensions;
-using GT_Medical.Models;
 using GT_Medical.UI;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using System.Reflection;
-using System.Text;
 
 namespace GT_Medical;
 public sealed class Startup
